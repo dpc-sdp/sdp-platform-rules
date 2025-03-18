@@ -1,0 +1,92 @@
+collect:
+  # File containing core extension configuration
+  core-extension-file:
+    file:read:
+      path: config/sync/core.extension.yml
+
+  # Check if lagoon logs module is enabled
+  lagoon-logs:
+    yaml:key:
+      input: core-extension-file
+      path: module.lagoon_logs
+      ignore-not-found: true
+
+  # Get the site profile
+  profile:
+    yaml:key:
+      input: core-extension-file
+      path: profile
+      ignore-not-found: true
+
+  # Lagoon configuration file
+  lagoon-file:
+    file:read:
+      path: .lagoon.yml
+
+  # TLS-ACME settings for different environments
+  production-tls-acme:
+    yaml:key:
+      input: lagoon-file
+      path: production_routes.active.routes[0].nginx-php[0].*.tls-acme
+      ignore-not-found: true
+
+  master-tls-acme:
+    yaml:key:
+      input: lagoon-file
+      path: environments.master.routes[0].nginx-php[0].*.tls-acme
+      ignore-not-found: true
+
+  uat-tls-acme:
+    yaml:key:
+      input: lagoon-file
+      path: environments.uat.routes[0].nginx-php[0].*.tls-acme
+      ignore-not-found: true
+
+  develop-tls-acme:
+    yaml:key:
+      input: lagoon-file
+      path: environments.develop.routes[0].nginx-php[0].*.tls-acme
+      ignore-not-found: true
+
+analyse:
+  lagoon-logs-enabled-check:
+    regex:not-match:
+      description: "Verify Lagoon logs module is enabled"
+      input: lagoon-logs
+      pattern: "^1$"
+      severity: high
+      
+  tide-profile-check:
+    regex:not-match:
+      description: "Verify Tide profile is correctly set"
+      input: profile
+      pattern: "^tide$"
+      severity: high
+
+  production-tls-acme-check:
+    regex:not-match:
+      description: "Verify TLS-ACME is enabled for the production environment"
+      input: production-tls-acme
+      pattern: "^false$"
+      severity: high
+
+  master-tls-acme-check:
+    regex:not-match:
+      description: "Verify TLS-ACME is enabled for the master environment"
+      input: master-tls-acme
+      pattern: "^false$"
+      severity: high
+
+  uat-tls-acme-check:
+    regex:not-match:
+      description: "Verify TLS-ACME is enabled for the UAT environment" 
+      input: uat-tls-acme
+      pattern: "^false$"
+      severity: high
+
+  develop-tls-acme-check:
+    regex:not-match:
+      description: "Verify TLS-ACME is enabled for the develop environment"
+      input: develop-tls-acme
+      pattern: "^false$"
+      severity: high
